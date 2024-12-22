@@ -50,17 +50,11 @@ module Diffy
             [string1, string2]
           end
 
-        if WINDOWS
-          # don't use open3 on windows
-          cmd = sprintf '"%s" %s %s', diff_bin, diff_options.join(' '), @paths.map { |s| %("#{s}") }.join(' ')
-          diff = `#{cmd}`
-        else
-          prog = POSIX::Spawn::Child.new(diff_bin, *(diff_options + @paths))
-          diff, err = prog.out, prog.err
-          if @options[:raise_on_error] && !err.empty?
-            raise Diffy::Errors::ProgramError.new(err)
-          end
+        diff, stderr, _process_status = Open3.capture3(diff_bin, *(diff_options + @paths))
+        if @options[:raise_on_error] && !stderr.empty?
+          raise Diffy::Errors::ProgramError.new, stderr
         end
+
         diff.force_encoding('ASCII-8BIT') if diff.respond_to?(:valid_encoding?) && !diff.valid_encoding?
         if diff =~ /\A\s*\Z/ && !options[:allow_empty_diff]
           diff = case options[:source]
@@ -170,9 +164,7 @@ module Diffy
       diffs.first << '.exe' if WINDOWS  # ldiff does not have exe extension
       @@bin = diffs.find { |name| system(name, __FILE__, __FILE__) }
 
-      if @@bin.nil?
-        raise "Can't find a diff executable in PATH #{ENV['PATH']}"
-      end
+      raise "Can't find a diff executable in PATH #{ENV['PATH']}" if @@bin.nil?
 
       @@bin
     end
