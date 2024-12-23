@@ -1,3 +1,19 @@
+== 3.6.0 ==
+Merge all the recent changes (version - 3.4.3) from the original gem.
+Raise an error if the diff command returns an error.
+
+original gem version - 3.4.3
+Require open3 unconditionally on Windows. Thanks @avdv!
+
+original gem version - 3.4.2
+Silence warning from unused variable when using `ruby -w`.  Thanks
+@sambostock!
+
+original gem version - 3.4.1
+Prevent remote code execution from user controlled diff file paths.  This
+issue was only present in Windows platforms. Thanks @tehryanx for reporting
+and testing the fix!
+
 == 3.5.1 ==
 Switch to POSIX.Spawn instead of Open3
 Option not to ignore stderr
